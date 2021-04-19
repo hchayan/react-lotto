@@ -20,7 +20,7 @@ type State = {
 };
 
 const WinningNumberForm = ({ handleWinningNumber, formRef }: Props) => {
-  const [state, setState] = useState({
+  const [state, setState] = useState<State>({
     first: 0,
     second: 0,
     third: 0,

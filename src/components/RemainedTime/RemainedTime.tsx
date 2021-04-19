@@ -1,10 +1,23 @@
+import { useEffect, useState } from 'react';
+import { GREENWICH_MILLISECONDS, TIMER_TICK } from '../../constants/timer';
+import { getRemainedTime } from '../../utils/date';
 import { RemainedTimeWrapper } from './RemainedTime.styles';
 
-type Props = {
-  remainTime: Date | null;
-};
+const RemainedTime = () => {
+  let remainTimer: NodeJS.Timeout | null = null;
+  const [remainTime, setRemainTime] = useState<Date | null>(null);
 
-const RemainedTime = ({ remainTime }: Props) => {
+  const handleRemainedTime = () => {
+    setRemainTime(new Date(getRemainedTime() - GREENWICH_MILLISECONDS));
+    remainTimer = setInterval(() => {
+      setRemainTime(new Date(getRemainedTime() - GREENWICH_MILLISECONDS));
+    }, TIMER_TICK);
+  };
+
+  useEffect(() => {
+    handleRemainedTime();
+  }, []);
+
   return (
     <RemainedTimeWrapper>
       🎯 로또 당첨 발표까지 🎯

@@ -51,7 +51,7 @@ const ResultModal = ({ handleModalClose, resetGame, tickets, winningNumber }: Pr
 
   useEffect(() => {
     computeResult();
-  });
+  }, []);
 
   return (
     <Modal handleModalClose={handleModalClose}>
