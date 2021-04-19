@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ResultModalWrapper, ResultTable } from './ResultModal.styles';
 import ResultTableRow from './ResultTableRow/ResultTableRow';
 import Modal from '../common/Modal';
@@ -15,83 +15,96 @@ type Props = {
   winningNumber: WinningNumber;
 };
 
-export default class ResultModal extends Component<Props> {
-  constructor(props: Props) {
-    super(props);
+type State = {
+  firstWinnerCount: number;
+  secondWinnerCount: number;
+  thirdWinnerCount: number;
+  fourthWinnerCount: number;
+  fifthWinnerCount: number;
+  profit: number;
+};
 
-    this.state = {};
-  }
+const ResultModal = ({ handleModalClose, resetGame, tickets, winningNumber }: Props) => {
+  const [component, setComponent] = useState<State>({
+    firstWinnerCount: 0,
+    secondWinnerCount: 0,
+    thirdWinnerCount: 0,
+    fourthWinnerCount: 0,
+    fifthWinnerCount: 0,
+    profit: 0,
+  });
 
-  componentDidMount() {
-    this.computeResult();
-  }
-
-  computeResult(): [number[], number] {
-    const { tickets, winningNumber } = this.props;
+  const computeResult = () => {
     const payment = tickets.length * TICKET.PRICE;
     const winnerCounts = getWinnerCounts(tickets, winningNumber);
     const profit = getTotalProfit(payment, winnerCounts);
 
-    return [winnerCounts, profit];
-  }
-
-  render() {
-    const [
-      [firstWinnerCount, secondWinnerCount, thirdWinnerCount, fourthWinnerCount, fifthWinnerCount],
+    setComponent({
+      firstWinnerCount: winnerCounts[0],
+      secondWinnerCount: winnerCounts[1],
+      thirdWinnerCount: winnerCounts[2],
+      fourthWinnerCount: winnerCounts[3],
+      fifthWinnerCount: winnerCounts[4],
       profit,
-    ] = this.computeResult();
+    });
+  };
 
-    return (
-      <Modal handleModalClose={this.props.handleModalClose}>
-        <ResultModalWrapper>
-          <h2 className="result-header">🏆 당첨 통계 🏆</h2>
-          <Wrapper display="flex">
-            <ResultTable>
-              <thead>
-                <tr>
-                  <th>일치 갯수</th>
-                  <th>당첨금</th>
-                  <th>당첨 갯수</th>
-                </tr>
-              </thead>
-              <tbody>
-                <ResultTableRow
-                  match={MATCH[RANK_INDEX.FIFTH]}
-                  prize={PRIZE[RANK_INDEX.FIFTH]}
-                  matchCount={fifthWinnerCount}
-                />
-                <ResultTableRow
-                  match={MATCH[RANK_INDEX.FOURTH]}
-                  prize={PRIZE[RANK_INDEX.FOURTH]}
-                  matchCount={fourthWinnerCount}
-                />
-                <ResultTableRow
-                  match={MATCH[RANK_INDEX.THIRD]}
-                  prize={PRIZE[RANK_INDEX.THIRD]}
-                  matchCount={thirdWinnerCount}
-                />
-                <ResultTableRow
-                  isBonus
-                  match={MATCH[RANK_INDEX.SECOND]}
-                  prize={PRIZE[RANK_INDEX.SECOND]}
-                  matchCount={secondWinnerCount}
-                />
-                <ResultTableRow
-                  match={MATCH[RANK_INDEX.FIRST]}
-                  prize={PRIZE[RANK_INDEX.FIRST]}
-                  matchCount={firstWinnerCount}
-                />
-              </tbody>
-            </ResultTable>
-          </Wrapper>
-          <p className="profit">수익률은 {profit}% 입니다.</p>
-          <Wrapper display="flex">
-            <Button type="reset" fullWidth onClick={this.props.resetGame}>
-              다시 시작하기
-            </Button>
-          </Wrapper>
-        </ResultModalWrapper>
-      </Modal>
-    );
-  }
-}
+  useEffect(() => {
+    computeResult();
+  });
+
+  return (
+    <Modal handleModalClose={handleModalClose}>
+      <ResultModalWrapper>
+        <h2 className="result-header">🏆 당첨 통계 🏆</h2>
+        <Wrapper display="flex">
+          <ResultTable>
+            <thead>
+              <tr>
+                <th>일치 갯수</th>
+                <th>당첨금</th>
+                <th>당첨 갯수</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ResultTableRow
+                match={MATCH[RANK_INDEX.FIFTH]}
+                prize={PRIZE[RANK_INDEX.FIFTH]}
+                matchCount={component.fifthWinnerCount}
+              />
+              <ResultTableRow
+                match={MATCH[RANK_INDEX.FOURTH]}
+                prize={PRIZE[RANK_INDEX.FOURTH]}
+                matchCount={component.fourthWinnerCount}
+              />
+              <ResultTableRow
+                match={MATCH[RANK_INDEX.THIRD]}
+                prize={PRIZE[RANK_INDEX.THIRD]}
+                matchCount={component.thirdWinnerCount}
+              />
+              <ResultTableRow
+                isBonus
+                match={MATCH[RANK_INDEX.SECOND]}
+                prize={PRIZE[RANK_INDEX.SECOND]}
+                matchCount={component.secondWinnerCount}
+              />
+              <ResultTableRow
+                match={MATCH[RANK_INDEX.FIRST]}
+                prize={PRIZE[RANK_INDEX.FIRST]}
+                matchCount={component.firstWinnerCount}
+              />
+            </tbody>
+          </ResultTable>
+        </Wrapper>
+        <p className="profit">수익률은 {component.profit}% 입니다.</p>
+        <Wrapper display="flex">
+          <Button type="reset" fullWidth onClick={resetGame}>
+            다시 시작하기
+          </Button>
+        </Wrapper>
+      </ResultModalWrapper>
+    </Modal>
+  );
+};
+
+export default ResultModal;

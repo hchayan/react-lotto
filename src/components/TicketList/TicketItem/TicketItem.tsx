@@ -1,4 +1,3 @@
-import React, { Component } from 'react';
 import { TicketItemWrapper } from './TicketItem.styles';
 
 type Props = {
@@ -6,19 +5,19 @@ type Props = {
   isDetailMode: boolean;
 };
 
-export default class TicketItem extends Component<Props> {
-  render() {
-    return (
-      <TicketItemWrapper>
-        <span className="ticket-icon">🎟️ </span>
-        {this.props.isDetailMode && (
-          <span className="ticket-numbers">
-            {this.props.ticketNumbers.map(number => {
-              return <span className="ticket-number">{number}</span>;
-            })}
-          </span>
-        )}
-      </TicketItemWrapper>
-    );
-  }
-}
+const TicketItem = ({ ticketNumbers, isDetailMode }: Props) => {
+  return (
+    <TicketItemWrapper>
+      <span className="ticket-icon">🎟️ </span>
+      {isDetailMode && (
+        <span className="ticket-numbers">
+          {ticketNumbers.map(number => {
+            return <span className="ticket-number">{number}</span>;
+          })}
+        </span>
+      )}
+    </TicketItemWrapper>
+  );
+};
+
+export default TicketItem;
