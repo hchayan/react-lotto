@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useRef, useState } from 'react';
 import { AppWrapper } from './App.styles';
 
 import PaymentForm from './components/PaymentForm/PaymentForm';
@@ -20,75 +20,68 @@ type State = {
   remainTime: Date | null;
 };
 
-export default class App extends Component<{}, State> {
-  winningNumberFormRef: React.RefObject<HTMLFormElement>;
-  remainTimer: NodeJS.Timeout | null;
+const App = () => {
+  const winningNumberFormRef = useRef<HTMLFormElement>(null);
+  const [remainTimer, setRemainTimer] = useState<NodeJS.Timeout | null>(null);
+  const [state, setState] = useState<State>({
+    tickets: [],
+    winningNumber: {
+      numbers: [],
+      bonus: 0,
+    },
+    isModalOpen: false,
+    remainTime: null,
+  });
 
-  constructor(props: {}) {
-    super(props);
-    this.winningNumberFormRef = React.createRef();
-    this.remainTimer = null;
-
-    this.state = {
-      tickets: [],
-      winningNumber: {
-        numbers: [],
-        bonus: 0,
-      },
-      isModalOpen: false,
-      remainTime: null,
-    };
-
-    this.handlePayment = this.handlePayment.bind(this);
-    this.handleRemainedTime = this.handleRemainedTime.bind(this);
-    this.handleWinningNumber = this.handleWinningNumber.bind(this);
-    this.handleModal = this.handleModal.bind(this);
-    this.resetGame = this.resetGame.bind(this);
-  }
-
-  tickRemainTime() {
-    this.setState({
+  const tickRemainTime = () => {
+    setState({
+      ...state,
       remainTime: new Date(getRemainedTime() - GREENWICH_MILLISECONDS),
     });
-  }
+  };
 
-  handleRemainedTime() {
-    this.tickRemainTime();
-    this.remainTimer = setInterval(() => {
-      this.tickRemainTime();
-    }, TIMER_TICK);
-  }
+  const handleRemainedTime = () => {
+    tickRemainTime();
+    setRemainTimer(
+      setInterval(() => {
+        tickRemainTime();
+      }, TIMER_TICK)
+    );
+  };
 
-  handlePayment(payment: number) {
+  const handlePayment = (payment: number) => {
     const tickets: Ticket[] = issueTickets(payment);
-    this.setState({
+    setState({
+      ...state,
       tickets,
     });
 
-    this.handleRemainedTime();
-  }
+    handleRemainedTime();
+  };
 
-  handleWinningNumber(winningNumber: WinningNumber) {
-    if (this.state.tickets.length === 0) {
+  const handleWinningNumber = (winningNumber: WinningNumber) => {
+    if (state.tickets.length === 0) {
       alert(ALERT_MESSAGE.SHOULD_BUY_TICKET);
       return;
     }
 
-    this.setState({
+    setState({
+      ...state,
       winningNumber,
     });
 
-    this.handleModal(true);
-  }
+    handleModal(true);
+  };
 
-  handleModal(isOpen: boolean) {
-    this.setState({
+  const handleModal = (isOpen: boolean) => {
+    setState({
+      ...state,
       isModalOpen: isOpen,
     });
-  }
+  };
 
-  resetGame() {
-    this.setState({
+  const resetGame = () => {
+    setState({
       tickets: [],
       winningNumber: {
         numbers: [],
@@ -98,30 +91,27 @@ export default class App extends Component<{}, State> {
       remainTime: null,
     });
 
-    this.winningNumberFormRef.current?.reset();
-    this.remainTimer && clearInterval(this.remainTimer);
-  }
+    winningNumberFormRef.current?.reset();
+    remainTimer && clearInterval(remainTimer);
+  };
 
-  render() {
-    return (
-      <AppWrapper display="flex">
-        <h1 className="app-title">🎱 행운의 로또</h1>
-        <PaymentForm handlePayment={this.handlePayment} />
-        {this.state.remainTime && <RemainedTime remainTime={this.state.remainTime} />}
-        <TicketList tickets={this.state.tickets} />
-        <WinningNumberForm
-          handleWinningNumber={this.handleWinningNumber}
-          formRef={this.winningNumberFormRef}
+  return (
+    <AppWrapper display="flex">
+      <h1 className="app-title">🎱 행운의 로또</h1>
+      <PaymentForm handlePayment={handlePayment} />
+      {state.remainTime && <RemainedTime remainTime={state.remainTime} />}
+      <TicketList tickets={state.tickets} />
+      <WinningNumberForm handleWinningNumber={handleWinningNumber} formRef={winningNumberFormRef} />
+      {state.isModalOpen && (
+        <ResultModal
+          handleModalClose={() => handleModal(false)}
+          resetGame={resetGame}
+          tickets={state.tickets}
+          winningNumber={state.winningNumber}
         />
-        {this.state.isModalOpen && (
-          <ResultModal
-            handleModalClose={() => this.handleModal(false)}
-            resetGame={this.resetGame}
-            tickets={this.state.tickets}
-            winningNumber={this.state.winningNumber}
-          />
-        )}
-      </AppWrapper>
-    );
-  }
-}
+      )}
+    </AppWrapper>
+  );
+};
+
+export default App;
